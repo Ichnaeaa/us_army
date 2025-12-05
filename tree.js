@@ -3,26 +3,18 @@ import * as d3 from "d3";
 import fs from "fs";
 import nodeHtmlToImage from "node-html-to-image";
 import pkg from "pg";
+import dotenv from "dotenv";
+
+dotenv.config(); // Load environment variables from .env
 
 const { Client } = pkg;
 
-// CLI args: node tree.js host port db user pass
-const [
-  ,
-  ,
-  argHost = "localhost",
-  argPort = "5432",
-  argDb = "",
-  argUser = "",
-  argPass = "",
-] = process.argv;
-
 const client = new Client({
-  host: argHost,
-  port: Number(argPort),
-  database: argDb,
-  user: argUser,
-  password: argPass,
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT || 5432),
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
 });
 
 function buildTree(data) {
@@ -47,7 +39,9 @@ function buildTree(data) {
 async function run() {
   try {
     await client.connect();
-    console.log(`Connected to PostgreSQL at ${argHost}:${argPort}`);
+    console.log(
+      `Connected to PostgreSQL at ${process.env.DB_HOST}:${process.env.DB_PORT}`
+    );
 
     const res = await client.query(
       "SELECT r_id, r_name, r_parent FROM public.rolle ORDER BY r_id;"
